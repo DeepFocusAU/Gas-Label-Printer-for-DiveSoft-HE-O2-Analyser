@@ -24,7 +24,7 @@ Printed on a Detonger DP230S with 50 × 50 mm thermal labels:
 
 | Part | Notes |
 | --- | --- |
-| ESP32-C3 with 72×40 SSD1306 OLED | Board profile `esp32-c3-devkitm-1`; OLED on I2C SDA GPIO5 / SCL GPIO6 |
+| [ESP32-C3 OLED board with 0.42" OLED](https://www.aliexpress.com/item/1005007892774677.html) (72×40 SSD1306) | Board profile `esp32-c3-devkitm-1`; OLED on I2C SDA GPIO5 / SCL GPIO6 |
 | Print button | Momentary switch, GPIO9 to GND (internal pull-up). GPIO9 is the BOOT strap: don't hold it during power-up. |
 | Logic level converter | BSS138, 5 V ↔ 3.3 V. The analyser's serial lines are 5 V TTL. |
 | Analyser serial | DVI-I pin 4 (TXD) → converter → GPIO20 (RX). Pin 12 (RXD) ← GPIO21 is optional. |

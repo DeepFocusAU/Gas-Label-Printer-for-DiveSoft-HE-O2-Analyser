@@ -69,6 +69,8 @@ Early labels, printed before the text rendering was smoothed: the large text was
 | Print button | Momentary switch, GPIO9 to GND (internal pull-up). GPIO9 is the BOOT strap: don't hold it during power-up. |
 | Logic level converter | BSS138, 5 V ↔ 3.3 V. The analyser's serial lines are 5 V TTL. |
 | Analyser serial | DVI-I pin 4 (TXD) → converter → GPIO20 (RX). Pin 12 (RXD) ← GPIO21 is optional. |
+| Power | 9 V boost converter (to DVI pin 24) and 5 V step-down (to the board's V5 pin), both fed from the printer's 2S Li-ion battery |
+| Cable | Dongle to cradle, through SM12 cable glands |
 | Detonger DP230S Bluetooth thermal label printer | Connects over BLE by its Bluetooth name. 384-dot (48 mm) print width. |
 | Labels | 50 × 50 mm thermal labels |
 
@@ -76,7 +78,7 @@ Early labels, printed before the text rendering was smoothed: the large text was
 
 ![Wiring diagram](docs/wiring.svg)
 
-Analyser DVI-I system connector, pins used: 4 TXD, 12 RXD (optional), 13 5V_SW (powers the converter's HV side), 14/15 GND. The diagram shows the signal wiring; in the finished build, the printer's battery powers the analyser and the board.
+Analyser DVI-I system connector, pins used: 4 TXD, 12 RXD (optional), 13 5V_SW (powers the converter's HV side), 14/15 GND, and 24 (external 9 V power in). Power comes from the printer's internal 2S Li-ion battery: a 9 V boost converter feeds the analyser on pin 24, and a 5 V step-down feeds the ESP32 board's V5 pin. The cable between the dongle and the cradle runs through SM12 cable glands.
 
 ## Building
 

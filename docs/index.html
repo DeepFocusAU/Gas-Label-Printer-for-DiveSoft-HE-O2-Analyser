@@ -146,13 +146,15 @@ footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
     <tr><td><a href="https://www.aliexpress.com/item/1005007892774677.html">ESP32-C3 OLED board with 0.42" OLED</a> (72×40 SSD1306)</td><td>OLED on I2C: SDA GPIO5, SCL GPIO6</td></tr>
     <tr><td>Print button</td><td>GPIO9 to GND (internal pull-up)</td></tr>
     <tr><td>Analyser serial</td><td>Analyser TX to GPIO20 (RX); GPIO21 is TX</td></tr>
+    <tr><td>Power</td><td>9&nbsp;V boost converter (to DVI pin 24) and 5&nbsp;V step-down (to the board's V5 pin), both fed from the printer's 2S Li-ion battery</td></tr>
+    <tr><td>Cable</td><td>Dongle to cradle, through SM12 cable glands</td></tr>
     <tr><td>Logic level converter</td><td>BSS138, 5&nbsp;V ↔ 3.3&nbsp;V, between analyser TXD and GPIO20</td></tr>
     <tr><td>Detonger DP230S Bluetooth thermal label printer</td><td>Connects over BLE by its Bluetooth name; 384-dot (48&nbsp;mm) print width</td></tr>
     <tr><td>Labels</td><td>50&nbsp;×&nbsp;50&nbsp;mm thermal labels</td></tr>
   </table>
 
   <h2>Wiring</h2>
-  <p>The analyser's DVI-I system connector supplies serial data on pin 4 (TXD, 5&nbsp;V TTL), switched 5&nbsp;V on pin 13 and ground on pins 14/15.</p>
+  <p>The analyser's DVI-I system connector supplies serial data on pin 4 (TXD, 5&nbsp;V TTL), switched 5&nbsp;V on pin 13 and ground on pins 14/15. Power comes from the printer's internal 2S Li-ion battery: a 9&nbsp;V boost converter feeds the analyser's external 9&nbsp;V input on pin 24, and a 5&nbsp;V step-down feeds the ESP32 board. The cable between the dongle and the cradle runs through SM12 cable glands.</p>
   <a href="wiring.svg"><img src="wiring.svg" alt="Wiring diagram: analyser DVI-I pin 4 TXD through a 5 V to 3.3 V level converter to ESP32-C3 GPIO20; pin 13 5 V to converter HV; board 3V3 to converter LV; grounds joined; print switch from GPIO9 to GND." style="width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:#fff"></a>
 
   <h2>Build and flash</h2>

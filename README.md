@@ -22,6 +22,8 @@ Printed on a Detonger DP230S with 50 × 50 mm thermal labels:
 
 ## Printer and labels
 
+<img src="docs/images/dp230s.png" alt="Detonger DP230S thermal label printer" width="300">
+
 | Spec | Detonger DP230S, as used here |
 | --- | --- |
 | Type | Portable direct-thermal label printer (no ink or ribbon) |

@@ -14,11 +14,23 @@ Project page: https://deepfocusau.github.io/Gas-Label-Printer-for-DiveSoft-HE-O2
 - On a button press, prints a 50 × 50 mm label with four lines: gas name, MOD, measured O2/He, and the analyser's date and time.
 - Will not print a stale reading: if no valid line arrives for 5 seconds, the reading is cleared.
 
-## Printed labels
+## Photos
 
-Printed on a Detonger DP230S with 50 × 50 mm thermal labels:
+Labels in use on stage and deco cylinders:
 
-<img src="docs/images/printed-labels.jpg" alt="Four printed gas labels: AIR, EAN32, 10/70 and OXYGEN" width="420">
+<img src="docs/images/labels-on-cylinders.jpg" alt="Printed labels on dive cylinders: 14/26 MOD 107M and several OXYGEN MOD 6M, each with measured O2/He and analysis time" width="640">
+
+The ESP32-C3 board showing EAN32 on its OLED, beside the label it just printed on the Detonger DP230S:
+
+<img src="docs/images/board-and-printer.jpg" alt="ESP32-C3 OLED board showing EAN32 in front of a DP230S printer with an EAN32 MOD 40M label" width="320">
+
+A strip of labels for four standard gases (50 × 50 mm):
+
+<img src="docs/images/printed-labels.jpg" alt="Four printed gas labels: AIR, EAN32, 10/70 and OXYGEN" width="320">
+
+Early labels, printed before the text rendering was smoothed: the large text was scaled up in whole-pixel blocks and came out stair-stepped.
+
+<img src="docs/images/early-labels.jpg" alt="Earlier label 21/35 MOD 66M with blocky, stair-stepped lettering" width="320">
 
 ## Printer and labels
 

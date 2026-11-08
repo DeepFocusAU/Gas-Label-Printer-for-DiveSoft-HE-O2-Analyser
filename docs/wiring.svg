@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" font-family="Arial, Helvetica, sans-serif" font-size="13">
+  <title>Gas Label Printer wiring diagram</title>
+  <rect width="1000" height="760" fill="#ffffff"/>
+  <style>
+    .box { fill: #f4f6f9; stroke: #3a4656; stroke-width: 2; }
+    .title { font-size: 16px; font-weight: bold; fill: #1b2430; }
+    .sub { font-size: 12px; fill: #5b6676; }
+    .pin { fill: #1b2430; }
+    .wl { font-size: 11px; fill: #3a4656; text-anchor: middle; }
+    .note { font-size: 13px; fill: #1b2430; }
+    .cell { fill: #fff; stroke: #8a96a6; }
+    .cn { font-size: 10px; text-anchor: middle; fill: #3a4656; }
+    .w { fill: none; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+
+  <text x="500" y="32" class="title" text-anchor="middle" font-size="20">Gas Label Printer for DiveSoft HE/O2 Analyser: wiring</text>
+
+  <!-- ============ ANALYSER DVI-I SOCKET ============ -->
+  <rect x="30" y="60" width="260" height="400" rx="10" class="box"/>
+  <text x="160" y="82" class="title" text-anchor="middle">DiveSoft analyser</text>
+  <text x="160" y="98" class="sub" text-anchor="middle">DVI-I system connector (socket face)</text>
+
+  <rect x="46" y="108" width="230" height="88" rx="14" fill="#fff" stroke="#3a4656" stroke-width="1.5"/>
+  <!-- row 1: pins 1-8 -->
+  <g>
+    <rect x="58" y="118" width="20" height="20" class="cell"/><text x="68" y="132" class="cn">1</text>
+    <rect x="80" y="118" width="20" height="20" class="cell"/><text x="90" y="132" class="cn">2</text>
+    <rect x="102" y="118" width="20" height="20" class="cell"/><text x="112" y="132" class="cn">3</text>
+    <rect x="124" y="118" width="20" height="20" fill="#2a9d4b" stroke="#2a9d4b"/><text x="134" y="132" class="cn" style="fill:#fff">4</text>
+    <rect x="146" y="118" width="20" height="20" class="cell"/><text x="156" y="132" class="cn">5</text>
+    <rect x="168" y="118" width="20" height="20" class="cell"/><text x="178" y="132" class="cn">6</text>
+    <rect x="190" y="118" width="20" height="20" class="cell"/><text x="200" y="132" class="cn">7</text>
+    <rect x="212" y="118" width="20" height="20" class="cell"/><text x="222" y="132" class="cn">8</text>
+  </g>
+  <!-- row 2: pins 9-16 -->
+  <g>
+    <rect x="58" y="142" width="20" height="20" class="cell"/><text x="68" y="156" class="cn">9</text>
+    <rect x="80" y="142" width="20" height="20" class="cell"/><text x="90" y="156" class="cn">10</text>
+    <rect x="102" y="142" width="20" height="20" class="cell"/><text x="112" y="156" class="cn">11</text>
+    <rect x="124" y="142" width="20" height="20" fill="#2b6cd6" stroke="#2b6cd6"/><text x="134" y="156" class="cn" style="fill:#fff">12</text>
+    <rect x="146" y="142" width="20" height="20" fill="#d62828" stroke="#d62828"/><text x="156" y="156" class="cn" style="fill:#fff">13</text>
+    <rect x="168" y="142" width="20" height="20" fill="#222" stroke="#222"/><text x="178" y="156" class="cn" style="fill:#fff">14</text>
+    <rect x="190" y="142" width="20" height="20" fill="#222" stroke="#222"/><text x="200" y="156" class="cn" style="fill:#fff">15</text>
+    <rect x="212" y="142" width="20" height="20" class="cell"/><text x="222" y="156" class="cn">16</text>
+  </g>
+  <!-- row 3: pins 17-24 -->
+  <g>
+    <rect x="58" y="166" width="20" height="20" class="cell"/><text x="68" y="180" class="cn">17</text>
+    <rect x="80" y="166" width="20" height="20" class="cell"/><text x="90" y="180" class="cn">18</text>
+    <rect x="102" y="166" width="20" height="20" class="cell"/><text x="112" y="180" class="cn">19</text>
+    <rect x="124" y="166" width="20" height="20" class="cell"/><text x="134" y="180" class="cn">20</text>
+    <rect x="146" y="166" width="20" height="20" class="cell"/><text x="156" y="180" class="cn">21</text>
+    <rect x="168" y="166" width="20" height="20" class="cell"/><text x="178" y="180" class="cn">22</text>
+    <rect x="190" y="166" width="20" height="20" class="cell"/><text x="200" y="180" class="cn">23</text>
+    <rect x="212" y="166" width="20" height="20" class="cell"/><text x="222" y="180" class="cn">24</text>
+  </g>
+  <!-- C1-C5 cross -->
+  <line x1="242" y1="152" x2="270" y2="152" stroke="#8a96a6" stroke-width="2"/>
+  <line x1="256" y1="124" x2="256" y2="180" stroke="#8a96a6" stroke-width="2"/>
+  <text x="250" y="192" class="cn">C1–C5</text>
+
+  <text x="40" y="226" class="sub">Pins used:</text>
+  <text x="280" y="264" class="pin" text-anchor="end"><tspan font-weight="bold">13</tspan>  5V_SW  +5 V (switched)</text>
+  <text x="280" y="304" class="pin" text-anchor="end"><tspan font-weight="bold">4</tspan>  TXD  serial out, TTL</text>
+  <text x="280" y="344" class="pin" text-anchor="end"><tspan font-weight="bold">12</tspan>  RXD  serial in, TTL</text>
+  <text x="280" y="384" class="pin" text-anchor="end"><tspan font-weight="bold">14</tspan>  GND</text>
+  <text x="280" y="424" class="pin" text-anchor="end"><tspan font-weight="bold">15</tspan>  GND</text>
+
+  <!-- ============ LEVEL SHIFTER ============ -->
+  <rect x="400" y="200" width="200" height="220" rx="8" class="box"/>
+  <text x="500" y="222" class="title" text-anchor="middle" font-size="14">Logic level converter</text>
+  <text x="500" y="238" class="sub" text-anchor="middle">BSS138, 5 V ↔ 3.3 V</text>
+  <text x="412" y="264" class="pin">HV</text>
+  <text x="412" y="304" class="pin">HV1</text>
+  <text x="412" y="344" class="pin">HV2</text>
+  <text x="412" y="384" class="pin">GND</text>
+  <text x="588" y="264" class="pin" text-anchor="end">LV</text>
+  <text x="588" y="304" class="pin" text-anchor="end">LV1</text>
+  <text x="588" y="344" class="pin" text-anchor="end">LV2</text>
+  <text x="588" y="384" class="pin" text-anchor="end">GND</text>
+  <line x1="448" y1="300" x2="552" y2="300" stroke="#b5bfcc" stroke-dasharray="4 4"/>
+  <line x1="448" y1="340" x2="552" y2="340" stroke="#b5bfcc" stroke-dasharray="4 4"/>
+  <line x1="448" y1="380" x2="552" y2="380" stroke="#b5bfcc" stroke-dasharray="4 4"/>
+
+  <!-- ============ ESP32-C3 BOARD ============ -->
+  <rect x="720" y="60" width="250" height="470" rx="10" class="box"/>
+  <text x="845" y="82" class="title" text-anchor="middle">ESP32-C3 OLED board</text>
+  <text x="845" y="98" class="sub" text-anchor="middle">with 0.42" OLED</text>
+  <rect x="770" y="112" width="150" height="80" rx="4" fill="#0d1117" stroke="#3a4656"/>
+  <text x="845" y="162" text-anchor="middle" font-size="26" font-weight="bold" fill="#7fd6ff">EAN32</text>
+  <text x="845" y="210" class="sub" text-anchor="middle">72×40 SSD1306, on-board I2C</text>
+  <text x="845" y="225" class="sub" text-anchor="middle">SDA GPIO5 · SCL GPIO6 (no wiring)</text>
+  <text x="732" y="264" class="pin">3V3</text>
+  <text x="732" y="304" class="pin">GPIO20 (RX)</text>
+  <text x="732" y="344" class="pin">GPIO21 (TX)</text>
+  <text x="732" y="384" class="pin">GND</text>
+  <text x="732" y="464" class="pin">GPIO9 (BOOT)</text>
+  <rect x="815" y="518" width="60" height="24" rx="8" fill="#c7ced8" stroke="#3a4656" stroke-width="1.5"/>
+  <text x="845" y="508" class="sub" text-anchor="middle">USB-C: power + programming</text>
+
+  <!-- ============ WIRES ============ -->
+  <!-- 5V -->
+  <path d="M290 260 H400" class="w" stroke="#d62828"/>
+  <text x="345" y="253" class="wl">+5 V</text>
+  <!-- TXD -->
+  <path d="M290 300 H400" class="w" stroke="#2a9d4b"/>
+  <text x="345" y="293" class="wl">TXD 5 V</text>
+  <!-- RXD optional -->
+  <path d="M290 340 H400" class="w" stroke="#2b6cd6" stroke-dasharray="8 6"/>
+  <text x="345" y="333" class="wl">RXD (optional)</text>
+  <!-- GND -->
+  <path d="M290 380 H400" class="w" stroke="#222"/>
+  <path d="M290 420 H330 V380" class="w" stroke="#222"/>
+  <circle cx="330" cy="380" r="5" fill="#222"/>
+  <text x="365" y="373" class="wl">GND</text>
+
+  <!-- 3V3 -->
+  <path d="M600 260 H720" class="w" stroke="#f08c00"/>
+  <text x="660" y="253" class="wl">3.3 V</text>
+  <!-- RX -->
+  <path d="M600 300 H720" class="w" stroke="#2a9d4b"/>
+  <text x="660" y="293" class="wl">RX 3.3 V</text>
+  <!-- TX optional -->
+  <path d="M600 340 H720" class="w" stroke="#2b6cd6" stroke-dasharray="8 6"/>
+  <text x="660" y="333" class="wl">TX (optional)</text>
+  <!-- GND -->
+  <path d="M600 380 H720" class="w" stroke="#222"/>
+  <text x="640" y="373" class="wl">GND</text>
+
+  <!-- Print switch: GPIO9 to GND -->
+  <path d="M720 460 H660 V478" class="w" stroke="#7b2cbf"/>
+  <circle cx="660" cy="482" r="4" fill="#fff" stroke="#3a4656" stroke-width="2"/>
+  <circle cx="660" cy="522" r="4" fill="#fff" stroke="#3a4656" stroke-width="2"/>
+  <line x1="663" y1="519" x2="684" y2="490" stroke="#3a4656" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="682" y1="478" x2="682" y2="494" stroke="#3a4656" stroke-width="2"/>
+  <line x1="674" y1="478" x2="690" y2="478" stroke="#3a4656" stroke-width="2"/>
+  <path d="M660 526 V545 H700 V380" class="w" stroke="#222"/>
+  <circle cx="700" cy="380" r="5" fill="#222"/>
+  <text x="648" y="498" class="pin" text-anchor="end" font-weight="bold">PRINT switch</text>
+  <text x="648" y="514" class="sub" text-anchor="end">momentary, normally open</text>
+
+  <!-- pin dots -->
+  <g fill="#1b2430">
+    <circle cx="290" cy="260" r="4"/><circle cx="290" cy="300" r="4"/><circle cx="290" cy="340" r="4"/>
+    <circle cx="290" cy="380" r="4"/><circle cx="290" cy="420" r="4"/>
+    <circle cx="400" cy="260" r="4"/><circle cx="400" cy="300" r="4"/><circle cx="400" cy="340" r="4"/><circle cx="400" cy="380" r="4"/>
+    <circle cx="600" cy="260" r="4"/><circle cx="600" cy="300" r="4"/><circle cx="600" cy="340" r="4"/><circle cx="600" cy="380" r="4"/>
+    <circle cx="720" cy="260" r="4"/><circle cx="720" cy="300" r="4"/><circle cx="720" cy="340" r="4"/>
+    <circle cx="720" cy="380" r="4"/><circle cx="720" cy="460" r="4"/>
+  </g>
+
+  <!-- ============ NOTES ============ -->
+  <line x1="30" y1="575" x2="970" y2="575" stroke="#d8dee6"/>
+  <text x="30" y="600" class="title" font-size="14">Notes</text>
+  <text x="30" y="624" class="note">1. The analyser's serial lines are 5 V TTL and ESP32-C3 pins are 3.3 V only, so the TXD line goes through the level converter.</text>
+  <text x="30" y="646" class="note">2. Only analyser TXD (pin 4) → GPIO20 is needed: the firmware only listens at 115200 baud. The RXD link (pin 12 ← GPIO21) is optional.</text>
+  <text x="30" y="668" class="note">3. GPIO9 is the board's BOOT strap pin: don't hold PRINT while powering up or resetting, or the chip starts in download mode.</text>
+  <text x="30" y="690" class="note">4. Power the ESP32-C3 from USB-C. Running it from 5V_SW (pin 13) is possible but check the analyser's 5 V current capacity first.</text>
+  <text x="30" y="712" class="note">5. The socket is drawn as you look at the analyser; a cable plug's pins are mirrored. Leave XI1–XI4 (attachment code, pins 5–8) unconnected.</text>
+  <text x="30" y="740" class="sub">Pinout source: DiveSoft "System connector" sheet. Colours: red +5 V, orange 3.3 V, black GND, green analyser → ESP data, blue optional, purple switch.</text>
+</svg>

@@ -19,9 +19,16 @@ Project page: https://deepfocusau.github.io/Gas-Label-Printer-for-DiveSoft-HE-O2
 | Part | Notes |
 | --- | --- |
 | ESP32-C3 with 72×40 SSD1306 OLED | Board profile `esp32-c3-devkitm-1`; OLED on I2C SDA GPIO5 / SCL GPIO6 |
-| Print button | GPIO9 to GND (internal pull-up) |
-| Analyser serial | Analyser TX → GPIO20 (RX). GPIO21 is TX. Check the analyser's signal levels before connecting. |
+| Print button | Momentary switch, GPIO9 to GND (internal pull-up). GPIO9 is the BOOT strap: don't hold it during power-up. |
+| Logic level converter | BSS138, 5 V ↔ 3.3 V. The analyser's serial lines are 5 V TTL. |
+| Analyser serial | DVI-I pin 4 (TXD) → converter → GPIO20 (RX). Pin 12 (RXD) ← GPIO21 is optional. |
 | BLE thermal label printer | 384 dots wide (48 mm). Developed with a DP230S printer. |
+
+## Wiring
+
+![Wiring diagram](docs/wiring.svg)
+
+Analyser DVI-I system connector, pins used: 4 TXD, 12 RXD (optional), 13 5V_SW (powers the converter's HV side), 14/15 GND. The ESP32-C3 is powered from USB-C.
 
 ## Building
 

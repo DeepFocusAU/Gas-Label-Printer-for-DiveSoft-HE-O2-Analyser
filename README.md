@@ -11,8 +11,14 @@ Project page: https://deepfocusau.github.io/Gas-Label-Printer-for-DiveSoft-HE-O2
 - Snaps the reading to the nearest standard mix (Oxygen, Air, EAN32–EAN80, 10/70, 15/55, 18/45, 21/35, 10/50); otherwise it shows the measured O2/He.
 - Works out the MOD at a ppO2 of 1.6, and never prints a MOD deeper than the measured O2 allows.
 - Shows the gas name on a small OLED, with status screens: `PAIR` (no printer), `NO SIG` (analyser silent), `WAIT`, `PRNT`, `ERR`.
-- On a button press, prints a 48 mm label with four lines: gas name, MOD, measured O2/He, and the analyser's date and time.
+- On a button press, prints a 50 × 50 mm label with four lines: gas name, MOD, measured O2/He, and the analyser's date and time.
 - Will not print a stale reading: if no valid line arrives for 5 seconds, the reading is cleared.
+
+## Printed labels
+
+Printed on a Detonger DP230S with 50 × 50 mm thermal labels:
+
+<img src="docs/images/printed-labels.jpg" alt="Four printed gas labels: AIR, EAN32, 10/70 and OXYGEN" width="420">
 
 ## Hardware
 
@@ -22,7 +28,8 @@ Project page: https://deepfocusau.github.io/Gas-Label-Printer-for-DiveSoft-HE-O2
 | Print button | Momentary switch, GPIO9 to GND (internal pull-up). GPIO9 is the BOOT strap: don't hold it during power-up. |
 | Logic level converter | BSS138, 5 V ↔ 3.3 V. The analyser's serial lines are 5 V TTL. |
 | Analyser serial | DVI-I pin 4 (TXD) → converter → GPIO20 (RX). Pin 12 (RXD) ← GPIO21 is optional. |
-| BLE thermal label printer | 384 dots wide (48 mm). Developed with a DP230S printer. |
+| Detonger DP230S Bluetooth thermal label printer | Connects over BLE by its Bluetooth name. 384-dot (48 mm) print width. |
+| Labels | 50 × 50 mm thermal labels |
 
 ## Wiring
 

@@ -93,6 +93,19 @@ footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
     <img src="images/printed-labels.jpg" alt="A strip of four printed 50 by 50 mm gas labels coming out of a Detonger DP230S printer: AIR MOD 66M, EAN32 MOD 40M, 10/70 MOD 150M and OXYGEN MOD 6M, each with measured O2 and He percentages and the analysis date and time." style="display:block;width:100%;max-width:480px;height:auto;border-radius:10px;border:1px solid var(--border)">
   </figure>
 
+  <h2>Printer and labels</h2>
+  <table>
+    <tr><th>Spec</th><th>Detonger DP230S, as used here</th></tr>
+    <tr><td>Type</td><td>Portable direct-thermal label printer (no ink or ribbon)</td></tr>
+    <tr><td>Print width</td><td>384 dots, 48&nbsp;mm (8 dots/mm, 203&nbsp;dpi)</td></tr>
+    <tr><td>Connection to this project</td><td>Bluetooth Low Energy; found by its Bluetooth name (DP230S-&lt;serial&gt;)</td></tr>
+    <tr><td>Commands</td><td>ESC/POS raster bitmap (<code>GS v 0</code>), with <code>GS FF</code> to feed to the next label gap</td></tr>
+    <tr><td>Other ports</td><td>USB-C</td></tr>
+    <tr><td>Display</td><td>Small OLED: model, serial, Bluetooth and battery status</td></tr>
+    <tr><td>Labels</td><td>50&nbsp;×&nbsp;50&nbsp;mm direct-thermal gap labels</td></tr>
+    <tr><td>Label layout</td><td>Gas name and MOD in large bold text, then measured O2/He and the analyser's date and time</td></tr>
+  </table>
+
   <h2>Hardware</h2>
   <table>
     <tr><th>Part</th><th>Connection</th></tr>

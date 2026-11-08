@@ -20,6 +20,18 @@ Printed on a Detonger DP230S with 50 × 50 mm thermal labels:
 
 <img src="docs/images/printed-labels.jpg" alt="Four printed gas labels: AIR, EAN32, 10/70 and OXYGEN" width="420">
 
+## Printer and labels
+
+| Spec | Detonger DP230S, as used here |
+| --- | --- |
+| Type | Portable direct-thermal label printer (no ink or ribbon) |
+| Print width | 384 dots, 48 mm (8 dots/mm, 203 dpi) |
+| Connection to this project | Bluetooth Low Energy; found by its Bluetooth name (`DP230S-<serial>`) |
+| Commands | ESC/POS raster bitmap (`GS v 0`), with `GS FF` to feed to the next label gap |
+| Other ports | USB-C |
+| Display | Small OLED: model, serial, Bluetooth and battery status |
+| Labels | 50 × 50 mm direct-thermal gap labels |
+
 ## Hardware
 
 | Part | Notes |

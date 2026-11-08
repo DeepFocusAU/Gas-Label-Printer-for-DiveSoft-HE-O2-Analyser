@@ -10,6 +10,12 @@ I built this for my Divesoft He/O2 analyser, which is about 20 years old. Credit
 
 It prints a single hybrid label with both the gas analysis and the MOD. That won't suit everyone, but it's what I wanted.
 
+## See it work
+
+[![Video: connecting the analyser, reading the gas and printing the label](docs/images/demo-poster.jpg)](docs/images/demo.mp4)
+
+Click the picture for the video: connecting the analyser, switching on, reading the gas and printing the label (49 s, no sound). It also plays on the [project page](https://deepfocusau.github.io/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/).
+
 ## What it does
 
 - No app and no Wi-Fi: press the button and the label prints.
@@ -91,6 +97,15 @@ In `src/main.cpp`:
 - `DEBUG_MODE`: set to `true` to cycle through the standard gases without an analyser attached.
 - `SERIAL_DIAG`: echoes every analyser line to the USB serial monitor.
 - `standardMixes[]`: the list of standard gases and their MODs.
+
+## 3D-printed parts
+
+Fusion 360 sources and printable STLs are in [`hardware/enclosure`](hardware/enclosure). GitHub shows the STL files in a 3D viewer.
+
+| Part | STL | Fusion 360 source |
+| --- | --- | --- |
+| Dongle | [Dongle.stl](hardware/enclosure/Dongle.stl) | [DiveSoft-Program-Dongle.f3d](hardware/enclosure/DiveSoft-Program-Dongle.f3d) |
+| Cradle | [Cradle.stl](hardware/enclosure/Cradle.stl) | [DiveSoft-PrinterDisplay.f3d](hardware/enclosure/DiveSoft-PrinterDisplay.f3d) |
 
 ## Ideas for improvement
 

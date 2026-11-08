@@ -86,6 +86,13 @@ footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
   <p>I built this for my Divesoft He/O2 analyser, which is about 20 years old. Credit to Divesoft for an analyser that has lasted this long, for giving it an open serial interface, and for excellent factory support to this day.</p>
   <p>It prints a single hybrid label with both the gas analysis and the MOD. That won't suit everyone, but it's what I wanted.</p>
 
+  <h2>See it work</h2>
+  <video controls muted playsinline preload="metadata" poster="images/demo-poster.jpg" style="display:block;width:100%;max-width:360px;height:auto;border-radius:10px;border:1px solid var(--border);background:#000">
+    <source src="images/demo.mp4" type="video/mp4">
+    <a href="images/demo.mp4">Download the video (MP4)</a>
+  </video>
+  <p class="note" style="margin-top:12px">Connecting the analyser, switching on, reading the gas and printing the label (49&nbsp;s, no sound).</p>
+
   <h2>What it does</h2>
   <div class="grid">
     <div class="card"><h3>No app, no Wi-Fi</h3><p>Press the button and the label prints. Nothing to install, and no phone or network needed.</p></div>
@@ -153,6 +160,14 @@ footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
   <pre>pio run -t upload
 pio device monitor</pre>
   <p>Set <code>DEBUG_MODE = true</code> to cycle through the standard gases without an analyser connected.</p>
+
+  <h2>3D-printed parts</h2>
+  <p>Fusion 360 sources and printable STLs are in <a href="https://github.com/DeepFocusAU/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/tree/main/hardware/enclosure"><code>hardware/enclosure</code></a>. GitHub shows the STL files in a 3D viewer.</p>
+  <table>
+    <tr><th>Part</th><th>STL</th><th>Fusion 360 source</th></tr>
+    <tr><td>Dongle</td><td><a href="https://github.com/DeepFocusAU/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/blob/main/hardware/enclosure/Dongle.stl">Dongle.stl</a></td><td><a href="https://github.com/DeepFocusAU/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/raw/main/hardware/enclosure/DiveSoft-Program-Dongle.f3d">DiveSoft-Program-Dongle.f3d</a></td></tr>
+    <tr><td>Cradle</td><td><a href="https://github.com/DeepFocusAU/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/blob/main/hardware/enclosure/Cradle.stl">Cradle.stl</a></td><td><a href="https://github.com/DeepFocusAU/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/raw/main/hardware/enclosure/DiveSoft-PrinterDisplay.f3d">DiveSoft-PrinterDisplay.f3d</a></td></tr>
+  </table>
 
   <h2>Ideas for improvement</h2>
   <ul>

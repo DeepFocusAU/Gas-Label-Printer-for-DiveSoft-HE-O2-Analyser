@@ -4,14 +4,22 @@ ESP32-C3 firmware that listens to the serial output of a DiveSoft helium/oxygen 
 
 Project page: https://deepfocusau.github.io/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/
 
+## Background
+
+I built this for my Divesoft He/O2 analyser, which is about 20 years old. Credit to Divesoft for an analyser that has lasted this long, for giving it an open serial interface, and for excellent factory support to this day.
+
+It prints a single hybrid label with both the gas analysis and the MOD. That won't suit everyone, but it's what I wanted.
+
 ## What it does
 
+- No app and no Wi-Fi: press the button and the label prints.
+- The printer's rechargeable 2S lithium battery also powers the analyser (originally a 9 V unit) and the ESP32 board.
 - Reads each analyser line over UART (115200 baud, 8N1), for example
   `He 35.0 % O2 21.0 % Ti 22.4 ~C 2026-08-25 06:54:00`
-- Snaps the reading to the nearest standard mix (Oxygen, Air, EAN32–EAN80, 10/70, 15/55, 18/45, 21/35, 10/50); otherwise it shows the measured O2/He.
+- A reading within ±2% O2 and ±5% He of a standard gas locks on to it, for an easy-to-read label (Oxygen, Air, EAN32–EAN80, 10/70, 15/55, 18/45, 21/35, 10/50). Anything else prints as measured O2/He.
 - Works out the MOD at a ppO2 of 1.6, and never prints a MOD deeper than the measured O2 allows.
 - Shows the gas name on a small OLED, with status screens: `PAIR` (no printer), `NO SIG` (analyser silent), `WAIT`, `PRNT`, `ERR`.
-- On a button press, prints a 50 × 50 mm label with four lines: gas name, MOD, measured O2/He, and the analyser's date and time.
+- On a button press, prints a 50 × 50 mm label with four lines: gas name, MOD, measured O2/He, and the date and time from the analyser's own clock.
 - Will not print a stale reading: if no valid line arrives for 5 seconds, the reading is cleared.
 
 ## Photos
@@ -44,7 +52,8 @@ Early labels, printed before the text rendering was smoothed: the large text was
 | Commands | ESC/POS raster bitmap (`GS v 0`), with `GS FF` to feed to the next label gap |
 | Other ports | USB-C |
 | Display | Small OLED: model, serial, Bluetooth and battery status |
-| Labels | 50 × 50 mm direct-thermal gap labels |
+| Labels | Low-cost 50 × 50 mm waterproof direct-thermal gap labels |
+| How the labels last | Hold up well and peel off cleanly months later, with little or no residue. Fine inside a car, but they fade under strong UV. |
 
 ## Hardware
 
@@ -61,7 +70,7 @@ Early labels, printed before the text rendering was smoothed: the large text was
 
 ![Wiring diagram](docs/wiring.svg)
 
-Analyser DVI-I system connector, pins used: 4 TXD, 12 RXD (optional), 13 5V_SW (powers the converter's HV side), 14/15 GND. The ESP32-C3 is powered from USB-C.
+Analyser DVI-I system connector, pins used: 4 TXD, 12 RXD (optional), 13 5V_SW (powers the converter's HV side), 14/15 GND. The diagram shows the signal wiring; in the finished build, the printer's battery powers the analyser and the board.
 
 ## Building
 
@@ -82,6 +91,14 @@ In `src/main.cpp`:
 - `DEBUG_MODE`: set to `true` to cycle through the standard gases without an analyser attached.
 - `SERIAL_DIAG`: echoes every analyser line to the USB serial monitor.
 - `standardMixes[]`: the list of standard gases and their MODs.
+
+## Ideas for improvement
+
+- **Wireless link from the analyser to the printer.** I wired it because I wanted to power the analyser from the printer, but for newer analysers a wireless dongle makes more sense.
+- **A second print button** for an alternative label, such as MOD only or gas analysis only.
+- **Switching on and off with the analyser**, instead of separately.
+- **Bluetooth pairing from the device.** The printer's name is currently hard-coded.
+- **A better cradle** that houses the electronics and combines them with the printer.
 
 ## Disclaimer
 

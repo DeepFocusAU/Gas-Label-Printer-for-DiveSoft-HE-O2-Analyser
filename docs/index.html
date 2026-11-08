@@ -82,12 +82,18 @@ footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
     </div>
   </header>
 
+  <h2>Background</h2>
+  <p>I built this for my Divesoft He/O2 analyser, which is about 20 years old. Credit to Divesoft for an analyser that has lasted this long, for giving it an open serial interface, and for excellent factory support to this day.</p>
+  <p>It prints a single hybrid label with both the gas analysis and the MOD. That won't suit everyone, but it's what I wanted.</p>
+
   <h2>What it does</h2>
   <div class="grid">
+    <div class="card"><h3>No app, no Wi-Fi</h3><p>Press the button and the label prints. Nothing to install, and no phone or network needed.</p></div>
+    <div class="card"><h3>Powered by the printer</h3><p>The printer's rechargeable 2S lithium battery also powers the analyser (originally a 9&nbsp;V unit) and the ESP32 board.</p></div>
     <div class="card"><h3>Reads the analyser</h3><p>Parses each line from the analyser's UART output (115200 baud) and rejects noise and partial lines.</p></div>
-    <div class="card"><h3>Names the mix</h3><p>Snaps to standard gases: Oxygen, Air, EAN32 to EAN80, 10/70, 15/55, 18/45, 21/35 and 10/50. Anything else prints as measured O2/He.</p></div>
+    <div class="card"><h3>Names the mix</h3><p>A reading within ±2% O2 and ±5% He of a standard gas locks on to it, for an easy-to-read label: Oxygen, Air, EAN32 to EAN80, 10/70, 15/55, 18/45, 21/35 and 10/50. Anything else prints as measured O2/He.</p></div>
     <div class="card"><h3>Works out MOD</h3><p>Maximum operating depth at ppO2 1.6, never deeper than the measured O2 allows.</p></div>
-    <div class="card"><h3>Prints a label</h3><p>A 50&nbsp;×&nbsp;50&nbsp;mm label: gas name, MOD, measured O2/He, and the analyser's date and time.</p></div>
+    <div class="card"><h3>Prints a label</h3><p>A 50&nbsp;×&nbsp;50&nbsp;mm label: gas name, MOD, measured O2/He, and the date and time from the analyser's own clock.</p></div>
     <div class="card"><h3>Shows status</h3><p>A small OLED shows the gas or a status: PAIR, NO SIG, WAIT, PRNT or ERR.</p></div>
     <div class="card"><h3>No stale labels</h3><p>If no valid reading arrives for 5 seconds the reading is cleared, so an old gas can't be printed.</p></div>
   </div>
@@ -122,7 +128,8 @@ footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
     <tr><td>Commands</td><td>ESC/POS raster bitmap (<code>GS v 0</code>), with <code>GS FF</code> to feed to the next label gap</td></tr>
     <tr><td>Other ports</td><td>USB-C</td></tr>
     <tr><td>Display</td><td>Small OLED: model, serial, Bluetooth and battery status</td></tr>
-    <tr><td>Labels</td><td>50&nbsp;×&nbsp;50&nbsp;mm direct-thermal gap labels</td></tr>
+    <tr><td>Labels</td><td>Low-cost 50&nbsp;×&nbsp;50&nbsp;mm waterproof direct-thermal gap labels</td></tr>
+    <tr><td>How the labels last</td><td>Hold up well and peel off cleanly months later, with little or no residue. Fine inside a car, but they fade under strong UV.</td></tr>
     <tr><td>Label layout</td><td>Gas name and MOD in large bold text, then measured O2/He and the analyser's date and time</td></tr>
   </table>
 
@@ -146,6 +153,15 @@ footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
   <pre>pio run -t upload
 pio device monitor</pre>
   <p>Set <code>DEBUG_MODE = true</code> to cycle through the standard gases without an analyser connected.</p>
+
+  <h2>Ideas for improvement</h2>
+  <ul>
+    <li><strong>Wireless link from the analyser to the printer.</strong> I wired it because I wanted to power the analyser from the printer, but for newer analysers a wireless dongle makes more sense.</li>
+    <li><strong>A second print button</strong> for an alternative label, such as MOD only or gas analysis only.</li>
+    <li><strong>Switching on and off with the analyser</strong>, instead of separately.</li>
+    <li><strong>Bluetooth pairing from the device.</strong> The printer's name is currently hard-coded.</li>
+    <li><strong>A better cradle</strong> that houses the electronics and combines them with the printer.</li>
+  </ul>
 
   <p class="note">A hobby project, not affiliated with DiveSoft. Always analyse your own gas and check the label before diving.</p>
 

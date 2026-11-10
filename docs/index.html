@@ -87,11 +87,22 @@ footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
   <p>It prints a single hybrid label with both the gas analysis and the MOD. That won't suit everyone, but it's what I wanted.</p>
 
   <h2>See it work</h2>
-  <video controls muted playsinline preload="metadata" poster="images/demo-poster.jpg" style="display:block;width:100%;max-width:360px;height:auto;border-radius:10px;border:1px solid var(--border);background:#000">
-    <source src="images/demo.mp4" type="video/mp4">
-    <a href="images/demo.mp4">Download the video (MP4)</a>
-  </video>
-  <p class="note" style="margin-top:12px">Connecting the analyser, switching on, reading the gas and printing the label (49&nbsp;s, no sound).</p>
+  <div class="gallery">
+    <figure class="photo">
+      <video controls muted playsinline preload="metadata" poster="images/demo-poster.jpg" style="display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--border);background:#000">
+        <source src="images/demo.mp4" type="video/mp4">
+        <a href="images/demo.mp4">Download the video (MP4)</a>
+      </video>
+      <figcaption>Wired version: connecting the analyser, switching on, reading the gas and printing the label (49&nbsp;s, no sound).</figcaption>
+    </figure>
+    <figure class="photo">
+      <video controls muted playsinline preload="metadata" poster="images/demo-bluetooth-poster.jpg" style="display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--border);background:#000">
+        <source src="images/demo-bluetooth.mp4" type="video/mp4">
+        <a href="images/demo-bluetooth.mp4">Download the video (MP4)</a>
+      </video>
+      <figcaption>Bluetooth version: a short press on the dongle prints the gas label, and a 1&nbsp;s hold prints the MOD label (28&nbsp;s).</figcaption>
+    </figure>
+  </div>
 
   <h2>What it does</h2>
   <div class="grid">
@@ -111,6 +122,22 @@ footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
     <figcaption>Labels in use on stage and deco cylinders.</figcaption>
   </figure>
   <div class="gallery">
+    <figure class="photo">
+      <a href="images/dongle-on-analyser.jpg"><img src="images/dongle-on-analyser.jpg" alt="Black 3D-printed dongle marked GAS and MOD plugged into the DiveSoft He/O2 analyser's system connector."></a>
+      <figcaption>Bluetooth version: the dongle plugs straight into the analyser.</figcaption>
+    </figure>
+    <figure class="photo">
+      <a href="images/dongle-oled.jpg"><img src="images/dongle-oled.jpg" alt="Close-up of the dongle's OLED window showing AIR, above the print tab marked GAS (short press) and MOD (hold)."></a>
+      <figcaption>The dongle's OLED shows the gas; the tab below is the print button.</figcaption>
+    </figure>
+    <figure class="photo">
+      <a href="images/gas-and-mod-label.jpg"><img src="images/gas-and-mod-label.jpg" alt="An AIR MOD 66M gas label followed by a MOD label showing a large 66."></a>
+      <figcaption>A gas label and a MOD label from the same reading.</figcaption>
+    </figure>
+    <figure class="photo">
+      <a href="images/mod-labels.jpg"><img src="images/mod-labels.jpg" alt="MOD labels reading 150, 40 and 66 beside the dongle on the analyser and an AIR gas label."></a>
+      <figcaption>MOD labels: 150, 40 and 66&nbsp;m.</figcaption>
+    </figure>
     <figure class="photo">
       <a href="images/board-and-printer.jpg"><img src="images/board-and-printer.jpg" alt="ESP32-C3 OLED board showing EAN32 on its display, in front of a Detonger DP230S printer with an EAN32 MOD 40M label."></a>
       <figcaption>The board's OLED shows the gas; the DP230S prints the label.</figcaption>
@@ -190,8 +217,13 @@ footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
   </table>
 
   <h2>Wiring</h2>
+  <h3>Wired version</h3>
   <p>The analyser's DVI-I system connector supplies serial data on pin 4 (TXD, 5&nbsp;V TTL), switched 5&nbsp;V on pin 13 and ground on pins 14/15. Power comes from the printer's internal 2S Li-ion battery: a 9&nbsp;V boost converter feeds the analyser's external 9&nbsp;V input on pin 24, and a 5&nbsp;V step-down feeds the ESP32 board. The cable between the dongle and the cradle runs through SM12 cable glands.</p>
   <a href="wiring.svg"><img src="wiring.svg" alt="Wiring diagram: analyser DVI-I pin 4 TXD through a 5 V to 3.3 V level converter to ESP32-C3 GPIO20; pin 13 5 V to converter HV; board 3V3 to converter LV; grounds joined; print switch from GPIO9 to GND." style="width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:#fff"></a>
+
+  <h3>Bluetooth version</h3>
+  <p>The analyser runs on its own battery and the printer connects over Bluetooth. The board takes its 5&nbsp;V from DVI pin 13 (5V_SW), which also feeds the level converter's HV side, so the board switches on and off with the analyser. Pin 24 isn't used. Set <code>COMMS_TYPE = COMMS_BLUETOOTH</code>.</p>
+  <a href="wiring-wireless.svg"><img src="wiring-wireless.svg" alt="Wiring diagram, Bluetooth version: analyser pin 13 5 V switched feeds the level converter's HV side and the board's V5 pin; pin 4 TXD through the converter to GPIO20; grounds joined; print switch on GPIO9; printer linked over Bluetooth only." style="width:100%;height:auto;border:1px solid var(--border);border-radius:10px;background:#fff"></a>
 
   <h2>Build and flash</h2>
   <p>The project uses <a href="https://platformio.org/">PlatformIO</a>. Set your printer's Bluetooth name in <code>src/main.cpp</code>, then:</p>
@@ -207,12 +239,17 @@ pio device monitor</pre>
     <tr><td>Cradle</td><td><a href="https://github.com/DeepFocusAU/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/blob/main/hardware/enclosure/Cradle.stl">Cradle.stl</a></td><td><a href="https://github.com/DeepFocusAU/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/raw/main/hardware/enclosure/DiveSoft-PrinterDisplay.f3d">DiveSoft-PrinterDisplay.f3d</a></td></tr>
   </table>
 
+  <h2>Done since the first version</h2>
+  <ul>
+    <li><strong>Wireless link from the analyser to the printer:</strong> the Bluetooth version, with the board in a dongle on the analyser.</li>
+    <li><strong>An alternative label:</strong> hold the print button for 1&nbsp;s to print a MOD-only label. This uses the same button rather than a second one.</li>
+    <li><strong>Switching on and off with the analyser:</strong> the Bluetooth version runs from the analyser's switched 5&nbsp;V. Both versions also power down after 5 minutes idle.</li>
+    <li><strong>Faster reconnection:</strong> the printer's address is remembered after the first connection.</li>
+  </ul>
+
   <h2>Ideas for improvement</h2>
   <ul>
-    <li><strong>Wireless link from the analyser to the printer.</strong> I wired it because I wanted to power the analyser from the printer, but for newer analysers a wireless dongle makes more sense.</li>
-    <li><strong>A second print button</strong> for an alternative label, such as MOD only or gas analysis only.</li>
-    <li><strong>Switching on and off with the analyser</strong>, instead of separately.</li>
-    <li><strong>Bluetooth pairing from the device.</strong> The printer's name is currently hard-coded.</li>
+    <li><strong>Bluetooth pairing from the device.</strong> The printer's name is still set in the code.</li>
     <li><strong>A better cradle</strong> that houses the electronics and combines them with the printer.</li>
   </ul>
 

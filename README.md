@@ -14,7 +14,13 @@ It prints a single hybrid label with both the gas analysis and the MOD. That won
 
 [![Video: connecting the analyser, reading the gas and printing the label](docs/images/demo-poster.jpg)](docs/images/demo.mp4)
 
-Click the picture for the video: connecting the analyser, switching on, reading the gas and printing the label (49 s, no sound). It also plays on the [project page](https://deepfocusau.github.io/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/).
+Wired version: connecting the analyser, switching on, reading the gas and printing the label (49 s, no sound).
+
+[![Video: Bluetooth version printing a gas label, then a MOD label](docs/images/demo-bluetooth-poster.jpg)](docs/images/demo-bluetooth.mp4)
+
+Bluetooth version: a short press on the dongle prints the gas label, and a 1 s hold prints the MOD label (28 s).
+
+Click a picture to watch. Both videos also play on the [project page](https://deepfocusau.github.io/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/).
 
 ## What it does
 
@@ -37,6 +43,14 @@ Labels in use on stage and deco cylinders:
 The ESP32-C3 board showing EAN32 on its OLED, beside the label it just printed on the Detonger DP230S:
 
 <img src="docs/images/board-and-printer.jpg" alt="ESP32-C3 OLED board showing EAN32 in front of a DP230S printer with an EAN32 MOD 40M label" width="320">
+
+Bluetooth version: the dongle plugs straight into the analyser's system connector. Its OLED shows the gas, and the tab below it is the print button (GAS: short press, MOD: hold).
+
+<img src="docs/images/dongle-on-analyser.jpg" alt="Black 3D-printed dongle marked GAS and MOD plugged into the DiveSoft He/O2 analyser" width="320"> <img src="docs/images/dongle-oled.jpg" alt="Close-up of the dongle's OLED window showing AIR above the print tab" width="320">
+
+The gas label and the MOD label printed from the same reading:
+
+<img src="docs/images/gas-and-mod-label.jpg" alt="An AIR MOD 66M gas label followed by a MOD label showing a large 66" width="320"> <img src="docs/images/mod-labels.jpg" alt="MOD labels 150, 40 and 66 beside the dongle on the analyser and an AIR gas label" width="420">
 
 A strip of labels for four standard gases (50 × 50 mm):
 
@@ -165,12 +179,16 @@ Fusion 360 sources and printable STLs are in [`hardware/enclosure`](hardware/enc
 | Dongle | [Dongle.stl](hardware/enclosure/Dongle.stl) | [DiveSoft-Program-Dongle.f3d](hardware/enclosure/DiveSoft-Program-Dongle.f3d) |
 | Cradle | [Cradle.stl](hardware/enclosure/Cradle.stl) | [DiveSoft-PrinterDisplay.f3d](hardware/enclosure/DiveSoft-PrinterDisplay.f3d) |
 
+## Done since the first version
+
+- **Wireless link from the analyser to the printer:** the Bluetooth version, with the board in a dongle on the analyser.
+- **An alternative label:** hold the print button for 1 s to print a MOD-only label. This uses the same button rather than a second one.
+- **Switching on and off with the analyser:** the Bluetooth version runs from the analyser's switched 5 V. Both versions also power down after 5 minutes idle.
+- **Faster reconnection:** the printer's address is remembered after the first connection.
+
 ## Ideas for improvement
 
-- **Wireless link from the analyser to the printer.** I wired it because I wanted to power the analyser from the printer, but for newer analysers a wireless dongle makes more sense.
-- **A second print button** for an alternative label, such as MOD only or gas analysis only.
-- **Switching on and off with the analyser**, instead of separately.
-- **Bluetooth pairing from the device.** The printer's name is currently hard-coded.
+- **Bluetooth pairing from the device.** The printer's name is still set in the code.
 - **A better cradle** that houses the electronics and combines them with the printer.
 
 ## Disclaimer

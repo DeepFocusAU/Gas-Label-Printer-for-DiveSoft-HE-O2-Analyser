@@ -140,6 +140,42 @@ footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
     <tr><td>Label layout</td><td>Gas name and MOD in large bold text, then measured O2/He and the analyser's date and time</td></tr>
   </table>
 
+  <h2>Build parts list</h2>
+  <p>There are two versions. Pick one, then set <code>COMMS_TYPE</code> in <code>src/main.cpp</code> to match.</p>
+
+  <h3>Wired version</h3>
+  <p>The printer's battery powers the analyser and the board, through a cable between the dongle on the analyser and the cradle that holds the printer. Firmware: <code>COMMS_TYPE = COMMS_HARDWIRED</code>.</p>
+  <div style="overflow-x:auto"><table>
+    <tr><th>Qty</th><th>Part</th><th>Notes</th></tr>
+    <tr><td>1</td><td><a href="https://www.aliexpress.com/item/1005007892774677.html">ESP32-C3 OLED board with 0.42" OLED</a></td><td>ESP32-C3 Super Mini with a 72×40 SSD1306 OLED on board</td></tr>
+    <tr><td>1</td><td>Logic level converter, BSS138, 4-channel, 5&nbsp;V ↔ 3.3&nbsp;V</td><td>One channel needed, two with the optional RXD link</td></tr>
+    <tr><td>1</td><td>Momentary push button, normally open</td><td>The print button, GPIO9 to GND</td></tr>
+    <tr><td>1</td><td>DVI-I plug (24+5)</td><td>Mates with the analyser's system connector socket</td></tr>
+    <tr><td>1</td><td>9&nbsp;V boost converter</td><td>2S Li-ion (7.4&nbsp;V nominal) in, 9&nbsp;V out to DVI pin 24</td></tr>
+    <tr><td>1</td><td>5&nbsp;V step-down (buck) converter</td><td>2S Li-ion in, 5&nbsp;V out to the board's V5 pin</td></tr>
+    <tr><td>1</td><td>Multi-core cable</td><td>Dongle to cradle; at least 4 cores (9&nbsp;V, 5&nbsp;V, GND, serial), 5 with the optional RXD link</td></tr>
+    <tr><td>2</td><td>SM12 cable glands</td><td>One at each end of the cable</td></tr>
+    <tr><td>1</td><td>Dongle, 3D-printed</td><td><a href="https://github.com/DeepFocusAU/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/blob/main/hardware/enclosure/Dongle.stl">Dongle.stl</a></td></tr>
+    <tr><td>1</td><td>Cradle, 3D-printed</td><td><a href="https://github.com/DeepFocusAU/Gas-Label-Printer-for-DiveSoft-HE-O2-Analyser/blob/main/hardware/enclosure/Cradle.stl">Cradle.stl</a>; holds the printer and the electronics</td></tr>
+    <tr><td>1</td><td>Detonger DP230S Bluetooth thermal label printer</td><td>Its internal 2S battery also powers the analyser and the board</td></tr>
+    <tr><td>1 roll</td><td>50&nbsp;×&nbsp;50&nbsp;mm direct-thermal gap labels</td><td></td></tr>
+    <tr><td>—</td><td>Hook-up wire</td><td></td></tr>
+  </table></div>
+
+  <h3>Bluetooth version</h3>
+  <p>The board sits in the dongle on the analyser and runs off the analyser's own battery, from DVI pin 13 (5V_SW), so it switches on and off with the analyser. The printer stands alone on its own battery and connects over Bluetooth, with no cable. Firmware: <code>COMMS_TYPE = COMMS_BLUETOOTH</code>.</p>
+  <div style="overflow-x:auto"><table>
+    <tr><th>Qty</th><th>Part</th><th>Notes</th></tr>
+    <tr><td>1</td><td><a href="https://www.aliexpress.com/item/1005007892774677.html">ESP32-C3 OLED board with 0.42" OLED</a></td><td>ESP32-C3 Super Mini with a 72×40 SSD1306 OLED on board; the display is flipped 180° in this version</td></tr>
+    <tr><td>1</td><td>Logic level converter, BSS138, 4-channel, 5&nbsp;V ↔ 3.3&nbsp;V</td><td>One channel needed, two with the optional RXD link</td></tr>
+    <tr><td>1</td><td>DVI-I plug (24+5)</td><td>Mates with the analyser's system connector socket</td></tr>
+    <tr><td>1</td><td>Dongle, 3D-printed</td><td>Houses the board, converter and plug, with a window for the OLED and a flexible tab that presses the board's BOOT button</td></tr>
+    <tr><td>1</td><td>Detonger DP230S Bluetooth thermal label printer</td><td>Unmodified, on its own battery</td></tr>
+    <tr><td>1 roll</td><td>50&nbsp;×&nbsp;50&nbsp;mm direct-thermal gap labels</td><td></td></tr>
+    <tr><td>—</td><td>Hook-up wire</td><td></td></tr>
+  </table></div>
+  <p>The print button is the board's own BOOT button, pressed through the dongle's flexible tab: a short press prints the gas label and a 1&nbsp;s hold prints a MOD label. So this version needs no separate button, converters, cable, glands or cradle. Neither list includes printing filament, screws or heat-shrink.</p>
+
   <h2>Hardware</h2>
   <table>
     <tr><th>Part</th><th>Connection</th></tr>

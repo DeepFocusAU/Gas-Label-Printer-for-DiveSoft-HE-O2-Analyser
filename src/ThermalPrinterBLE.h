@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <NimBLEDevice.h>
+#include <Preferences.h>
 #include <atomic>
 
 // Upper bound on bytes per BLE write. The printer has no flow control, so larger
@@ -16,16 +17,42 @@
 #define BLE_MAX_BYTES_PER_SEC 4000
 #define BLE_MIN_CHUNK_GAP_MS  12
 
+// Transmit power. The printer sits centimetres away in the cradle, so the
+// default +9 dBm is wasted. Raise it (ESP_PWR_LVL_N6, _N0, _P3) if the link is
+// unreliable with the printer further away.
+#define BLE_TX_POWER ESP_PWR_LVL_N0
+
+// A connect attempt blocks loop(); NimBLE's default is 30 s.
+#define BLE_CONNECT_TIMEOUT_S 5
+
+// Scanning while disconnected: back-to-back scans for the first two minutes
+// after the link drops (or a button press), so the printer is picked up as soon
+// as it advertises again, then a short scan every few seconds to save power.
+#define BLE_SCAN_SECONDS         1
+#define BLE_SCAN_PERIOD_FAST_MS  0
+#define BLE_SCAN_PERIOD_SLOW_MS  5000
+#define BLE_SCAN_FAST_FOR_MS     120000
+// Once the printer's address is known, scans are passive (no scan requests sent)
+// and match on the address. Every Nth scan is active, in case the name only
+// appears in the scan response and the address has changed.
+#define BLE_ACTIVE_SCAN_EVERY 4
+
 class ThermalPrinterBLE : public NimBLEAdvertisedDeviceCallbacks, public NimBLEClientCallbacks {
 private:
     String _targetName;
     // Written from the NimBLE host task, read from loop().
     std::atomic<bool> _doConnect;
     std::atomic<bool> _connected;
+    std::atomic<uint32_t> _disconnectedSince;
     NimBLEClient* _pClient;
     NimBLERemoteCharacteristic* _pRemoteCharacteristic;
     NimBLEAddress _targetAddress;
+    // Address saved in flash from the last successful connection, if any.
+    bool _haveSavedAddress;
+    NimBLEAddress _savedAddress;
     unsigned long _lastScanTime;
+    uint32_t _scanCount;
+    bool _scanNow;
     size_t _chunkSize;
     // Called between write chunks so the UI keeps animating during a long print.
     void (*_idleHook)();
@@ -83,34 +110,88 @@ private:
         }
     }
 
+    void loadSavedAddress() {
+        Preferences prefs;
+        if (!prefs.begin("printer", true)) return;
+        String name = prefs.getString("name", "");
+        String addr = prefs.getString("addr", "");
+        uint8_t type = prefs.getUChar("type", BLE_ADDR_PUBLIC);
+        prefs.end();
+        // Ignore an address saved for a different printer name.
+        if (addr.length() == 0 || name != _targetName) return;
+        _savedAddress = NimBLEAddress(std::string(addr.c_str()), type);
+        _haveSavedAddress = true;
+        Serial.printf("[BLE] Saved printer address: %s\n", addr.c_str());
+    }
+
+    void saveAddress(const NimBLEAddress& address) {
+        if (_haveSavedAddress && _savedAddress == address) return;
+        Preferences prefs;
+        if (!prefs.begin("printer", false)) return;
+        prefs.putString("name", _targetName);
+        prefs.putString("addr", address.toString().c_str());
+        prefs.putUChar("type", address.getType());
+        prefs.end();
+        _savedAddress = address;
+        _haveSavedAddress = true;
+        Serial.printf("[BLE] Saved printer address %s\n", address.toString().c_str());
+    }
+
+    void startScan() {
+        _scanNow = false;
+        NimBLEScan* pBLEScan = NimBLEDevice::getScan();
+        bool active = !_haveSavedAddress || (_scanCount % BLE_ACTIVE_SCAN_EVERY) == BLE_ACTIVE_SCAN_EVERY - 1;
+        _scanCount++;
+        pBLEScan->setActiveScan(active);
+        pBLEScan->start(BLE_SCAN_SECONDS, nullptr, false);
+        _lastScanTime = millis();
+    }
+
 public:
     ThermalPrinterBLE(const char* targetName) :
-        _targetName(targetName), _doConnect(false), _connected(false),
+        _targetName(targetName), _doConnect(false), _connected(false), _disconnectedSince(0),
         _pClient(nullptr), _pRemoteCharacteristic(nullptr), _targetAddress(""),
-        _lastScanTime(0), _chunkSize(20), _idleHook(nullptr) {}
+        _haveSavedAddress(false), _savedAddress(""),
+        _lastScanTime(0), _scanCount(0), _scanNow(false), _chunkSize(20), _idleHook(nullptr) {}
 
     void setIdleHook(void (*hook)()) { _idleHook = hook; }
 
     void init(const char* localBLEName) {
         NimBLEDevice::init(localBLEName);
+        NimBLEDevice::setPower(BLE_TX_POWER);
         NimBLEDevice::setMTU(BLE_REQUESTED_MTU);
         NimBLEScan* pBLEScan = NimBLEDevice::getScan();
         pBLEScan->setAdvertisedDeviceCallbacks(this);
         pBLEScan->setInterval(100);
         pBLEScan->setWindow(50);
-        pBLEScan->setActiveScan(true);
 
-        pBLEScan->start(2, nullptr, false);
-        _lastScanTime = millis();
+        _disconnectedSince = millis();
+        loadSavedAddress();
+        if (_haveSavedAddress) {
+            // Try the known printer straight away, without scanning first. If it's
+            // off, the connect times out and normal scanning takes over.
+            _targetAddress = _savedAddress;
+            _doConnect = true;
+        } else {
+            startScan();
+        }
     }
 
     void keepScanAlive() {
-        if (!_connected && !_doConnect) {
-            if (millis() - _lastScanTime > 4000) {
-                NimBLEDevice::getScan()->start(2, nullptr, false);
-                _lastScanTime = millis();
-            }
-        }
+        if (_connected || _doConnect) return;
+        if (NimBLEDevice::getScan()->isScanning()) return;
+        unsigned long now = millis();
+        uint32_t period = (now - _disconnectedSince < BLE_SCAN_FAST_FOR_MS)
+                              ? BLE_SCAN_PERIOD_FAST_MS : BLE_SCAN_PERIOD_SLOW_MS;
+        if (_scanNow || now - _lastScanTime >= period) startScan();
+    }
+
+    // Scan on the next loop() and go back to fast scanning, e.g. after a button
+    // press while the printer isn't connected.
+    void requestScanNow() {
+        if (_connected || _doConnect) return;
+        _scanNow = true;
+        _disconnectedSince = millis();
     }
 
     bool checkScanTrigger() { return _doConnect; }
@@ -123,11 +204,20 @@ public:
         // A client left over from a dropped connection can't be deleted inside the
         // disconnect callback, so it is cleaned up here.
         releaseClient();
+        // onResult stops the scan from the BLE task; connecting before it has
+        // fully stopped can fail straight away.
+        NimBLEScan* pBLEScan = NimBLEDevice::getScan();
+        if (pBLEScan->isScanning()) pBLEScan->stop();
+        for (int i = 0; i < 50 && pBLEScan->isScanning(); i++) delay(10);
+
         _pClient = NimBLEDevice::createClient();
         _pClient->setClientCallbacks(this, false);
+        _pClient->setConnectTimeout(BLE_CONNECT_TIMEOUT_S);
 
         Serial.printf("[BLE] Handshaking directly with target address: %s\n", _targetAddress.toString().c_str());
+        uint32_t started = millis();
         if (!_pClient->connect(_targetAddress)) {
+            Serial.printf("[BLE] Connect failed after %lu ms.\n", (unsigned long)(millis() - started));
             releaseClient();
             return false;
         }
@@ -156,7 +246,18 @@ public:
 
         _pRemoteCharacteristic = pChar;
         _connected = true;
+        saveAddress(_targetAddress);
         return true;
+    }
+
+    // Before sleeping: drops the link and stops the BLE stack entirely.
+    void shutdown() {
+        NimBLEScan* pBLEScan = NimBLEDevice::getScan();
+        if (pBLEScan->isScanning()) pBLEScan->stop();
+        _doConnect = false;
+        _connected = false;
+        releaseClient();
+        NimBLEDevice::deinit(true);
     }
 
     bool sendCommand(const uint8_t* cmd, size_t size) {
@@ -188,19 +289,21 @@ protected:
     void onDisconnect(NimBLEClient* pClient) override {
         Serial.println("[BLE] Printer disconnected.");
         _connected = false;
+        _disconnectedSince = millis();
     }
 
     void onResult(NimBLEAdvertisedDevice* advertisedDevice) override {
         if (_doConnect || _connected) return;
-        if (!advertisedDevice->haveName()) return;
 
-        String deviceName = advertisedDevice->getName().c_str();
-        if (deviceName == _targetName) {
-            Serial.printf("[MATCH] Target printer found: %s\n", deviceName.c_str());
-            NimBLEDevice::getScan()->stop();
-            _targetAddress = advertisedDevice->getAddress();
-            _doConnect = true;
-        }
+        bool nameMatch = advertisedDevice->haveName() &&
+                         String(advertisedDevice->getName().c_str()) == _targetName;
+        bool addressMatch = _haveSavedAddress && advertisedDevice->getAddress() == _savedAddress;
+        if (!nameMatch && !addressMatch) return;
+
+        Serial.printf("[MATCH] Target printer found: %s\n", advertisedDevice->getAddress().toString().c_str());
+        NimBLEDevice::getScan()->stop();
+        _targetAddress = advertisedDevice->getAddress();
+        _doConnect = true;
     }
 };
 

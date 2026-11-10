@@ -8,6 +8,9 @@
 
 #include <Fonts/FreeSansBold24pt7b.h>
 #include <Fonts/FreeSansBold18pt7b.h>
+// Same face as FreeSansBold24pt, digits only, ~4x larger, so the MOD number
+// needs little upscaling and keeps smooth edges.
+#include "FreeSansBoldDigits.h"
 
 #define PRINT_WIDTH_DOTS  384
 #define PRINT_ROW_BYTES   (PRINT_WIDTH_DOTS / 8)
@@ -199,16 +202,42 @@ private:
         return sendRasterData(outBuffer, (size_t)heightLines * PRINT_ROW_BYTES);
     }
 
-public:
-    PrinterRenderer(ThermalPrinterBLE* bleInstance) : _ble(bleInstance), _rasterBytesOwed(0) {}
-
-    // Returns false if the printer dropped or memory ran out part-way through.
-    bool executeRasterBitmapPrint(const String& r1, const String& r2, const String& r3, const String& r4) {
+    bool beginLabel() {
         if (!resyncPrinter()) return false;
-
         uint8_t initCmd[] = {ESC_INIT_0, ESC_INIT_1};
         if (!_ble->sendCommand(initCmd, sizeof(initCmd))) return false;
         delay(50);
+        return true;
+    }
+
+    // Feeds to the next label's gap.
+    bool endLabel() {
+        delay(200);
+        uint8_t gapCmd[] = {ESC_GAP_0, ESC_GAP_1};
+        return _ble->sendCommand(gapCmd, sizeof(gapCmd));
+    }
+
+public:
+    PrinterRenderer(ThermalPrinterBLE* bleInstance) : _ble(bleInstance), _rasterBytesOwed(0) {}
+
+    // Max Operating Depth label: only the depth number, as large and heavy as it
+    // will go, centred both ways. The 36-dot (4.5mm) blank band at each end keeps
+    // the ink clear of the label end, where prints near the edge come out clipped.
+    // Returns false if the printer dropped or memory ran out part-way through.
+    bool executeModLabelPrint(const String& depthText) {
+        const uint16_t endMargin = 36;
+        if (!beginLabel()) return false;
+        if (!pushBlankRows(endMargin)) return false;
+        // No scale cap: the number grows until it fills the width or the band.
+        // The digits-only font has no other characters, so the text must be digits.
+        if (!renderSmoothTextRow(depthText, &FreeSansBoldDigits, PRINT_WIDTH_DOTS - 2 * endMargin, 20.0f, 0, 3)) return false;
+        if (!pushBlankRows(endMargin)) return false;
+        return endLabel();
+    }
+
+    // Returns false if the printer dropped or memory ran out part-way through.
+    bool executeRasterBitmapPrint(const String& r1, const String& r2, const String& r3, const String& r4) {
+        if (!beginLabel()) return false;
 
         if (!pushBlankRows(6)) return false;
 
@@ -231,10 +260,7 @@ public:
         if (!renderSmoothTextRow(r4, &FreeSansBold18pt7b, 78, 1.0f, 0)) return false;
 
         if (!pushBlankRows(10)) return false;
-
-        delay(200);
-        uint8_t gapCmd[] = {ESC_GAP_0, ESC_GAP_1};
-        return _ble->sendCommand(gapCmd, sizeof(gapCmd));
+        return endLabel();
     }
 };
 

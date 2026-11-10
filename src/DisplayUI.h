@@ -20,6 +20,7 @@ private:
     U8G2_SSD1306_72X40_ER_F_HW_I2C _u8g2;
     String _lastMainText;
     int16_t _lastScannerPos;
+    bool _flipped;
 
     // Triangle wave from the clock, so speed stays constant however often tick() runs.
     // The bar and its tail run fully off-screen at each end before turning back.
@@ -53,16 +54,24 @@ private:
     }
 
 public:
-    DisplayUI() : _u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE), _lastScannerPos(-1) {
+    DisplayUI() : _u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE), _lastScannerPos(-1), _flipped(false) {
         _lastMainText = "";
     }
 
-    void init() {
+    // flip180 rotates the whole picture by 180 degrees.
+    void init(bool flip180 = false) {
+        _flipped = flip180;
         Wire.begin(5, 6);
         _u8g2.begin();
+        _u8g2.setDisplayRotation(flip180 ? U8G2_R2 : U8G2_R0);
         _u8g2.setContrast(0x2F);
         _u8g2.clearBuffer();
         _u8g2.sendBuffer();
+    }
+
+    // Turns the panel off (or back on). The SSD1306 keeps its RAM while off.
+    void powerSave(bool off) {
+        _u8g2.setPowerSave(off ? 1 : 0);
     }
 
     // Call often. Sends only the bottom 8-pixel tile row, and only when the bar moved.
@@ -70,7 +79,10 @@ public:
         bool movingRight;
         if (scannerPosition(&movingRight) == _lastScannerPos) return;
         drawScanner();
-        _u8g2.updateDisplayArea(0, SCANNER_Y / 8, DISPLAY_WIDTH / 8, 1);
+        // Tile rows are in the panel's native orientation, so when flipped the
+        // scanner's bottom row sits in the top tile row.
+        uint8_t tileRow = _flipped ? (DISPLAY_HEIGHT - 1 - SCANNER_Y) / 8 : SCANNER_Y / 8;
+        _u8g2.updateDisplayArea(0, tileRow, DISPLAY_WIDTH / 8, 1);
     }
 
     void drawInterface(const String& mainText) {

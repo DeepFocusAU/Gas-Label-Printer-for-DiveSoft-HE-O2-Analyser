@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <esp_task_wdt.h>
+#include <esp_sleep.h>
+#include <driver/gpio.h>
 
 #include "ThermalPrinterBLE.h"
 #include "PrinterRenderer.h"
@@ -13,6 +15,27 @@
 // GPIO21 at reset, so the analyser's RX line may see a burst of text on power-up.
 #define RX1_PIN 20
 #define TX1_PIN 21
+
+// 80 MHz is plenty for the UART, BLE and display, and draws several mA less
+// than the default 160 MHz.
+const uint32_t CPU_FREQ_MHZ = 80;
+
+// With no valid analyser line and no button press for this long, the board
+// powers down: BLE off, OLED off, chip in light sleep until the button is
+// pressed, then a clean restart. 0 disables it.
+const uint32_t AUTO_OFF_MS = 5UL * 60UL * 1000UL;
+// Optional output that is driven high while running and low when powered down,
+// e.g. the EN pin of the analyser's 9 V boost converter. -1 means not fitted.
+// Avoid strapping pins (2, 8, 9) and the pins already in use.
+#define POWER_EN_PIN -1
+
+// How the board is connected. Bluetooth flips the display 180 degrees;
+// Hardwired leaves it in its original orientation.
+enum CommsType { COMMS_HARDWIRED, COMMS_BLUETOOTH };
+const CommsType COMMS_TYPE = COMMS_BLUETOOTH;
+// Bluetooth only: holding the print (BOOT) button this long prints a MOD label
+// (depth only) instead of the full gas label.
+const uint32_t MOD_LABEL_HOLD_MS = 1000;
 
 // Set to true to ignore Serial1 and instead feed a fake analyser line for each
 // standard gas in turn, changing every DEBUG_GAS_INTERVAL_MS.
@@ -39,6 +62,8 @@ boolean analyserEverReceived = false;
 // Last line that parsed cleanly; this is what decides whether there's a signal.
 uint32_t analyserLastValidMs = 0;
 boolean analyserEverValid = false;
+// Last valid analyser line or button press; drives the auto power-down.
+uint32_t lastActivityMs = 0;
 
 boolean analyserHasSignal() {
     return analyserEverValid && millis() - analyserLastValidMs < NO_SIGNAL_TIMEOUT_MS;
@@ -49,11 +74,13 @@ struct SystemState {
     String row2Text;
     String row3Text;
     String row4Text;
+    // Same depth as row 2, for the MOD label.
+    int modDepth;
     // Only true while the most recent analyser line parsed cleanly.
     boolean hasValidReading;
 };
 
-SystemState state = {"00/00", "MOD --M", "O2: 0.0%; He: 0.0%", "", false};
+SystemState state = {"00/00", "MOD --M", "O2: 0.0%; He: 0.0%", "", 0, false};
 
 DisplayUI display;
 ThermalPrinterBLE printer("DP230S-Y512423506");
@@ -179,6 +206,7 @@ boolean parseGasString(String line) {
     char row2Buffer[32] = {0};
     snprintf(row2Buffer, sizeof(row2Buffer), "MOD %dM", finalMOD);
     state.row2Text = String(row2Buffer);
+    state.modDepth = finalMOD;
 
     char row3Buffer[64] = {0};
     snprintf(row3Buffer, sizeof(row3Buffer), "O2: %.1f%%; He: %.1f%%", fO2, fHe);
@@ -187,6 +215,7 @@ boolean parseGasString(String line) {
     state.hasValidReading = true;
     analyserLastValidMs = millis();
     analyserEverValid = true;
+    lastActivityMs = analyserLastValidMs;
 
     display.drawInterface(idleScreenText());
     return true;
@@ -316,6 +345,13 @@ void checkSerialHardwareInput() {
     }
 }
 
+void resetWatchdog() {
+    // CONFIG_ESP_TASK_WDT_EN is IDF 5.x; CONFIG_ESP_TASK_WDT is IDF 4.x.
+    #if defined(CONFIG_ESP_TASK_WDT_EN) || defined(CONFIG_ESP_TASK_WDT)
+    esp_task_wdt_reset();
+    #endif
+}
+
 void handlePrintButton() {
     // Re-armed only once the button is released, so holding it never reprints.
     static boolean buttonArmed = true;
@@ -329,8 +365,29 @@ void handlePrintButton() {
     delay(50);
     if (digitalRead(BTN_PIN) != LOW) return;
     buttonArmed = false;
+    lastActivityMs = millis();
+    // If the printer isn't connected, look for it now instead of waiting for
+    // the next backed-off scan.
+    printer.requestScanNow();
 
-    Serial.println("[EVENT] Normal print action triggered.");
+    // Bluetooth: a short press prints the gas label, a long hold the MOD label.
+    // Wait for the release (or the hold time) to tell them apart.
+    boolean modLabel = false;
+    if (COMMS_TYPE == COMMS_BLUETOOTH) {
+        uint32_t pressedAt = millis();
+        while (digitalRead(BTN_PIN) == LOW) {
+            if (millis() - pressedAt >= MOD_LABEL_HOLD_MS) {
+                modLabel = true;
+                display.drawInterface("MOD");
+                break;
+            }
+            resetWatchdog();
+            display.tick();
+            delay(10);
+        }
+    }
+
+    Serial.println(modLabel ? "[EVENT] MOD label print triggered." : "[EVENT] Normal print action triggered.");
 
     if (!state.hasValidReading || !analyserHasSignal()) {
         Serial.println("[REJECTED] No valid analyser reading.");
@@ -348,8 +405,12 @@ void handlePrintButton() {
         return;
     }
 
-    display.drawInterface("PRNT");
-    if (!renderer.executeRasterBitmapPrint(state.row1Text, state.row2Text, state.row3Text, state.row4Text)) {
+    // MOD stays on screen for the whole MOD print, so it's clear which label is coming.
+    display.drawInterface(modLabel ? "MOD" : "PRNT");
+    boolean printed = modLabel
+        ? renderer.executeModLabelPrint(String(state.modDepth))
+        : renderer.executeRasterBitmapPrint(state.row1Text, state.row2Text, state.row3Text, state.row4Text);
+    if (!printed) {
         Serial.println("[PRINT] Print aborted.");
         display.drawInterface("ERR");
         delay(1200);
@@ -357,14 +418,74 @@ void handlePrintButton() {
     display.drawInterface(idleScreenText());
 }
 
+// Shuts everything down and sleeps until the button is pressed, then restarts.
+// GPIO9 isn't an RTC pin, so on the C3 it can wake light sleep but not deep
+// sleep. Light sleep with BLE stopped and the OLED off draws well under 1 mA.
+void enterPowerDown() {
+    Serial.println("[POWER] Idle; powering down. Press the button to wake.");
+    display.drawInterface("OFF");
+    delay(1500);
+
+    printer.shutdown();
+    Serial1.end();
+    display.powerSave(true);
+    if (POWER_EN_PIN >= 0) digitalWrite(POWER_EN_PIN, LOW);
+    Serial.flush();
+
+    // Keep the button's pull-up (and the power-enable level) during sleep,
+    // instead of the C3's default of isolating every pin.
+    #if SOC_GPIO_SUPPORT_SLP_SWITCH
+    gpio_sleep_sel_dis((gpio_num_t)BTN_PIN);
+    if (POWER_EN_PIN >= 0) gpio_sleep_sel_dis((gpio_num_t)POWER_EN_PIN);
+    #endif
+    gpio_wakeup_enable((gpio_num_t)BTN_PIN, GPIO_INTR_LOW_LEVEL);
+    esp_sleep_enable_gpio_wakeup();
+    esp_light_sleep_start();
+
+    // Woken by the button. GPIO9 is the BOOT strap and must be high when the
+    // chip restarts, or it starts in download mode, so wait for the release.
+    // The watchdog is fed in case the button is held for a while.
+    while (digitalRead(BTN_PIN) == LOW) {
+        resetWatchdog();
+        delay(10);
+    }
+    delay(50);
+    esp_restart();
+}
+
 void setup() {
+    setCpuFrequencyMhz(CPU_FREQ_MHZ);
+    if (POWER_EN_PIN >= 0) {
+        pinMode(POWER_EN_PIN, OUTPUT);
+        digitalWrite(POWER_EN_PIN, HIGH);
+    }
+
     Serial.begin(115200);
     delay(10);
     Serial.println("\n=== ESP32-C3 GAS LABEL PRINTER ===");
 
     pinMode(BTN_PIN, INPUT_PULLUP);
 
-    display.init();
+    display.init(COMMS_TYPE == COMMS_BLUETOOTH);
+
+    // Show why the last run ended, if it wasn't a normal power-up or reset, so a
+    // reboot loop can be diagnosed without USB. LOW V is the brownout detector:
+    // the supply sagged, typically when Bluetooth starts.
+    esp_reset_reason_t resetReason = esp_reset_reason();
+    Serial.printf("[BOOT] Reset reason: %d\n", (int)resetReason);
+    const char* resetText = nullptr;
+    switch (resetReason) {
+        case ESP_RST_BROWNOUT: resetText = "LOW V"; break;
+        case ESP_RST_PANIC:    resetText = "CRASH"; break;
+        case ESP_RST_INT_WDT:
+        case ESP_RST_TASK_WDT:
+        case ESP_RST_WDT:      resetText = "WDT";   break;
+        default: break;
+    }
+    if (resetText != nullptr) {
+        display.drawInterface(resetText);
+        delay(1500);
+    }
     display.drawInterface("BOOT");
 
     printer.init("ESP32_C3_Printer");
@@ -377,14 +498,12 @@ void setup() {
 
     display.drawInterface(idleScreenText());
 
-    Serial.println("[SUCCESS] System initialized.");
+    lastActivityMs = millis();
+    Serial.printf("[SUCCESS] System initialized at %u MHz.\n", (unsigned)getCpuFrequencyMhz());
 }
 
 void loop() {
-    // CONFIG_ESP_TASK_WDT_EN is IDF 5.x; CONFIG_ESP_TASK_WDT is IDF 4.x.
-    #if defined(CONFIG_ESP_TASK_WDT_EN) || defined(CONFIG_ESP_TASK_WDT)
-    esp_task_wdt_reset();
-    #endif
+    resetWatchdog();
 
     printer.keepScanAlive();
     checkSerialHardwareInput();
@@ -420,6 +539,10 @@ void loop() {
     }
 
     handlePrintButton();
+
+    if (AUTO_OFF_MS > 0 && millis() - lastActivityMs >= AUTO_OFF_MS) {
+        enterPowerDown();
+    }
 
     // Heartbeat: freezes if loop() stalls, and during the ERR pauses.
     display.tick();

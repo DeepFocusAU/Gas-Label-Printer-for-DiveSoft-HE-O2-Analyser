@@ -61,6 +61,46 @@ Early labels, printed before the text rendering was smoothed: the large text was
 | Labels | Low-cost 50 × 50 mm waterproof direct-thermal gap labels |
 | How the labels last | Hold up well and peel off cleanly months later, with little or no residue. Fine inside a car, but they fade under strong UV. |
 
+## Build parts list
+
+There are two versions. Pick one, then set `COMMS_TYPE` in `src/main.cpp` to match.
+
+### Wired version
+
+The printer's battery powers the analyser and the board, through a cable between the dongle on the analyser and the cradle that holds the printer. Firmware: `COMMS_TYPE = COMMS_HARDWIRED`. Wiring: [docs/wiring.svg](docs/wiring.svg).
+
+| Qty | Part | Notes |
+| --- | --- | --- |
+| 1 | [ESP32-C3 OLED board with 0.42" OLED](https://www.aliexpress.com/item/1005007892774677.html) | ESP32-C3 Super Mini with a 72×40 SSD1306 OLED on board |
+| 1 | Logic level converter, BSS138, 4-channel, 5 V ↔ 3.3 V | One channel needed, two with the optional RXD link |
+| 1 | Momentary push button, normally open | The print button, GPIO9 to GND |
+| 1 | DVI-I plug (24+5) | Mates with the analyser's system connector socket |
+| 1 | 9 V boost converter | 2S Li-ion (7.4 V nominal) in, 9 V out to DVI pin 24 |
+| 1 | 5 V step-down (buck) converter | 2S Li-ion in, 5 V out to the board's V5 pin |
+| 1 | Multi-core cable | Dongle to cradle; at least 4 cores (9 V, 5 V, GND, serial), 5 with the optional RXD link |
+| 2 | SM12 cable glands | One at each end of the cable |
+| 1 | Dongle, 3D-printed | [Dongle.stl](hardware/enclosure/Dongle.stl) |
+| 1 | Cradle, 3D-printed | [Cradle.stl](hardware/enclosure/Cradle.stl); holds the printer and the electronics |
+| 1 | Detonger DP230S Bluetooth thermal label printer | Its internal 2S battery also powers the analyser and the board |
+| 1 roll | 50 × 50 mm direct-thermal gap labels | |
+| — | Hook-up wire | |
+
+### Bluetooth version
+
+The board sits in the dongle on the analyser and runs off the analyser's own battery, from DVI pin 13 (5V_SW), so it switches on and off with the analyser. The printer stands alone on its own battery and connects over Bluetooth, with no cable. Firmware: `COMMS_TYPE = COMMS_BLUETOOTH`. Wiring: [docs/wiring-wireless.svg](docs/wiring-wireless.svg).
+
+| Qty | Part | Notes |
+| --- | --- | --- |
+| 1 | [ESP32-C3 OLED board with 0.42" OLED](https://www.aliexpress.com/item/1005007892774677.html) | ESP32-C3 Super Mini with a 72×40 SSD1306 OLED on board; the display is flipped 180° in this version |
+| 1 | Logic level converter, BSS138, 4-channel, 5 V ↔ 3.3 V | One channel needed, two with the optional RXD link |
+| 1 | DVI-I plug (24+5) | Mates with the analyser's system connector socket |
+| 1 | Dongle, 3D-printed | Houses the board, converter and plug, with a window for the OLED and a flexible tab that presses the board's BOOT button |
+| 1 | Detonger DP230S Bluetooth thermal label printer | Unmodified, on its own battery |
+| 1 roll | 50 × 50 mm direct-thermal gap labels | |
+| — | Hook-up wire | |
+
+The print button is the board's own BOOT button, pressed through the dongle's flexible tab: a short press prints the gas label and a 1 s hold prints a MOD label. So this version needs no separate button, converters, cable, glands or cradle. Neither list includes printing filament, screws or heat-shrink.
+
 ## Hardware
 
 | Part | Notes |
@@ -79,6 +119,14 @@ Early labels, printed before the text rendering was smoothed: the large text was
 ![Wiring diagram](docs/wiring.svg)
 
 Analyser DVI-I system connector, pins used: 4 TXD, 12 RXD (optional), 13 5V_SW (powers the converter's HV side), 14/15 GND, and 24 (external 9 V power in). Power comes from the printer's internal 2S Li-ion battery: a 9 V boost converter feeds the analyser on pin 24, and a 5 V step-down feeds the ESP32 board's V5 pin. The cable between the dongle and the cradle runs through SM12 cable glands.
+
+### Bluetooth mode (powered from the analyser)
+
+![Wiring diagram, Bluetooth mode](docs/wiring-wireless.svg)
+
+The analyser runs on its own battery and the printer connects over BLE. The board takes its 5 V from DVI pin 13 (5V_SW), which also feeds the level converter's HV side, so the board switches on and off with the analyser. Pin 24 is not used. Set `COMMS_TYPE = COMMS_BLUETOOTH`.
+
+In this mode a short press of the print (BOOT) button prints the normal gas label, and holding it for 1 s (`MOD_LABEL_HOLD_MS`) prints a MOD label instead: just the maximum operating depth in metres, the same number as on the gas label's second row, as large as it will fit. The OLED shows `MOD` when the hold has registered, so you can let go.
 
 ## Building
 
@@ -99,6 +147,14 @@ In `src/main.cpp`:
 - `DEBUG_MODE`: set to `true` to cycle through the standard gases without an analyser attached.
 - `SERIAL_DIAG`: echoes every analyser line to the USB serial monitor.
 - `standardMixes[]`: the list of standard gases and their MODs.
+- `AUTO_OFF_MS`: after this long with no analyser reading and no button press (default 5 minutes), the board shows `OFF`, stops Bluetooth, turns the OLED off and sleeps until the print button is pressed. Set to 0 to disable.
+- `POWER_EN_PIN`: optional output held high while running and low when powered down, for example to switch a 9 V boost converter with an enable pin. `-1` when not fitted.
+- `CPU_FREQ_MHZ`: 80 MHz by default, to save power.
+
+In `src/ThermalPrinterBLE.h`:
+
+- `BLE_TX_POWER`: −12 dBm by default, since the printer is close by. Raise it if the link is unreliable.
+- The printer's address is saved in flash after the first connection, so the board reconnects straight away at power-up and scans passively after that. After the link drops it scans continuously for two minutes, so the printer is picked up as soon as it advertises again, then backs off to a 1 s scan every 5 s; a button press goes back to continuous scanning.
 
 ## 3D-printed parts
 
